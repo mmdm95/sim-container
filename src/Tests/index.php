@@ -62,6 +62,17 @@ echo PHP_EOL . 'This is TmpClass1 result of showName() method but it is s new in
 $tmpClass1->showName(); // still expected value is "John Doe" but it is another instance!
 
 /**
+ * Get it from factory another time
+ * @var TmpClass1 $tmpClass1
+ */
+$tmpClass1 = $container->make(TmpClass1::class);
+
+echo PHP_EOL . 'This is TmpClass1 result of showName() method but it is s new instance not resolved one again:' . PHP_EOL;
+
+//use function of TmpClass1
+$tmpClass1->showName(); // still expected value is "John Doe" but it is another instance!
+
+/**
  * Get it normally one more time
  * @var TmpClass1 $tmpClass1
  */

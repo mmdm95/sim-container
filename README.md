@@ -2,7 +2,7 @@
 A library for dependency injection management.
 
 ## Features
-- Auto wining
+- Auto wiring
 - Singleton construction
 - Factory construction
 - Both method and array access

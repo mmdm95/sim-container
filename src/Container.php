@@ -64,13 +64,8 @@ class Container implements ContainerInterface, ArrayAccess
             $this->set($abstract);
         }
 
-        $entry = $this->instances[$abstract];
-        if ($entry instanceof Closure) {
-            $this->resolvedServices[$abstract] = $entry($this);
-            return $this->resolvedServices[$abstract];
-        }
+        $this->resolvedServices[$abstract] = $this->make($abstract);
 
-        $this->resolvedServices[$abstract] = $this->resolve($entry);
         return $this->resolvedServices[$abstract];
     }
 
@@ -86,14 +81,16 @@ class Container implements ContainerInterface, ArrayAccess
      */
     public function make($abstract)
     {
-        if (isset($this->instances[$abstract])) {
-            $entry = $this->instances[$abstract];
-            if ($entry instanceof Closure) {
-                return $entry($this);
-            }
+        if (!isset($this->instances[$abstract])) {
+            $this->instances[$abstract] = $abstract;
         }
 
-        return $this->resolve($abstract);
+        $entry = $this->instances[$abstract];
+        if ($entry instanceof Closure) {
+            return $entry($this);
+        }
+
+        return $this->resolve($entry);
     }
 
     /**
@@ -147,6 +144,10 @@ class Container implements ContainerInterface, ArrayAccess
      * The offset to retrieve.
      * </p>
      * @return mixed Can return all value types.
+     * @throws ParameterHasNoDefaultValueException
+     * @throws ReflectionException
+     * @throws ServiceNotFoundException
+     * @throws ServiceNotInstantiableException
      * @since 5.0.0
      */
     public function offsetGet($offset)
@@ -230,6 +231,8 @@ class Container implements ContainerInterface, ArrayAccess
      * @return mixed|object
      * @throws ParameterHasNoDefaultValueException
      * @throws ReflectionException
+     * @throws ServiceNotFoundException
+     * @throws ServiceNotInstantiableException
      */
     protected function resolveDependency(ReflectionParameter $parameter)
     {

@@ -107,6 +107,31 @@ $container->get($abstract);
 //...
 ```
 
+#### Container Inheritance
+
+If you want to inherit `Container` (to customize maybe), you 
+can inherit like normal way but if you have multiple class to 
+inherit, then use `ContainerTrait` inside your class and inherit 
+other class as well.
+
+Note: After a trait using, you should type hint `Container` 
+to `YourOtherClass` in closures.
+
+```php
+class YourOtherClass extends AnotherClass {
+    use ContainerTrait;
+    
+    // other codes
+}
+
+$instance = new YourOtherClass();
+
+// the difference is in [YourOtherClass] instead of [Container]
+$instance->set($abstract, function (YourOtherClass $c) {
+    // some code
+});
+```
+
 ## Array accessing
 You can use array accessing instead of method accessing:
 

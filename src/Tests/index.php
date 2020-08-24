@@ -14,6 +14,11 @@ $container = new Container();
 // Singleton in normal instance
 //$container = Container::getInstance();
 
+// Test if can instantiate an interface
+// Because of an interface in construct, it can't be initialize but the
+// parameter has default value, then it can be initialize.
+//$container->get(\Sim\Container\Tests\TmpITest::class);
+
 // define instances
 /**
  * Dependency injection will be automatically inject other classes to TmpClass1,

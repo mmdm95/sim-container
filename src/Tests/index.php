@@ -1,13 +1,18 @@
 <?php
 
 use Sim\Container\Container;
+use Sim\Container\ContainerSingleton;
 use Sim\Container\Tests\TmpClass1;
 use Sim\Container\Tests\TmpClass2;
 use Sim\Container\Tests\TmpClass3;
 
 include_once '../../vendor/autoload.php';
 
+// Normal instantiating
 $container = new Container();
+
+// Singleton instantiating
+//$container = ContainerSingleton::getInstance();
 
 // define instances
 /**
@@ -24,10 +29,15 @@ $tmpClass1->showName(); // expected value is "Sheldon Cooper"
 $container->set(TmpClass2::class, function () {
     return new TmpClass2(new TmpClass3('John'), 'Doe');
 });
+
 // this is equivalent of set method in container
 $container[TmpClass1::class] = function(Container $c) {
     return new TmpClass1($c->get(TmpClass2::class), random_int(1, 10000));
 };
+
+//$container[TmpClass1::class] = function(ContainerSingleton $c) {
+//    return new TmpClass1($c::getInstance()->get(TmpClass2::class), random_int(1, 10000));
+//};
 
 /**
  * @var TmpClass1 $tmpClass1

@@ -14,9 +14,6 @@ $container = new Container();
 // Singleton in normal instance
 //$container = Container::getInstance();
 
-// Singleton instantiating
-//$container = ContainerSingleton::getInstance();
-
 // define instances
 /**
  * Dependency injection will be automatically inject other classes to TmpClass1,
@@ -37,10 +34,6 @@ $container->set(TmpClass2::class, function () {
 $container[TmpClass1::class] = function(Container $c) {
     return new TmpClass1($c->get(TmpClass2::class), random_int(1, 10000));
 };
-
-//$container[TmpClass1::class] = function(ContainerSingleton $c) {
-//    return new TmpClass1($c->get(TmpClass2::class), random_int(1, 10000));
-//};
 
 /**
  * @var TmpClass1 $tmpClass1

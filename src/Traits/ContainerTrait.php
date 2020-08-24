@@ -6,6 +6,7 @@ use Closure;
 use ReflectionClass;
 use ReflectionException;
 use ReflectionParameter;
+use Sim\Container\ContainerSingleton;
 use Sim\Container\Exceptions\ParameterHasNoDefaultValueException;
 use Sim\Container\Exceptions\ServiceNotFoundException;
 use Sim\Container\Exceptions\ServiceNotInstantiableException;

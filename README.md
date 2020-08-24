@@ -93,15 +93,18 @@ $container->unset('log_cls');
 $container->unset(NotStoredClass::class);
 ```
 
-#### ContainerSingleton
+#### Singleton accessing
 
-You can access all methods of `Container` in singleton manner.
+If you need to access container in singleton manner, use 
+`getInstance` static method.
 
 ```php
-$container = ContainerSingleton::getInstance();
+$container = Container::getInstance();
 
-// now access all methods
+// then use all methods
 $container->get($abstract);
+
+//...
 ```
 
 ## Array accessing

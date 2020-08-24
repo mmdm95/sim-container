@@ -238,6 +238,7 @@ trait ContainerTrait
             if (!$this->isUserDefined($parameter)) { // The parameter is not user defined
                 $this->set($typeName); // Register it
             }
+
             try {
                 return $this->get($typeName); // Instantiate it
             } catch (\Exception $e) {

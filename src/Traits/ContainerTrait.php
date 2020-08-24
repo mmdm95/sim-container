@@ -230,8 +230,6 @@ trait ContainerTrait
      * @return mixed|object
      * @throws ParameterHasNoDefaultValueException
      * @throws ReflectionException
-     * @throws ServiceNotFoundException
-     * @throws ServiceNotInstantiableException
      */
     protected function resolveDependency(ReflectionParameter $parameter)
     {
@@ -240,7 +238,15 @@ trait ContainerTrait
             if (!$this->isUserDefined($parameter)) { // The parameter is not user defined
                 $this->set($typeName); // Register it
             }
-            return $this->get($typeName); // Instantiate it
+            try {
+                return $this->get($typeName); // Instantiate it
+            } catch (\Exception $e) {
+                if ($parameter->isDefaultValueAvailable()) { // Check if default value for a parameter is available
+                    return $parameter->getDefaultValue(); // Get default value of parameter
+                } else {
+                    throw new ParameterHasNoDefaultValueException($parameter->name);
+                }
+            }
         } else { // The parameter is a built-in primitive type
             if ($parameter->isDefaultValueAvailable()) { // Check if default value for a parameter is available
                 return $parameter->getDefaultValue(); // Get default value of parameter

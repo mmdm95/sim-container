@@ -25,6 +25,8 @@ $container = new Container();
 
 ## Available functions
 
+#### Container
+
 - set($abstract, $concrete = null): Container
 
 This method store a $concrete with alias of $abstract 
@@ -89,6 +91,17 @@ This method remove a stored $abstract.
 $container->unset('log_cls');
 // or
 $container->unset(NotStoredClass::class);
+```
+
+#### ContainerSingleton
+
+You can access all methods of `Container` in singleton manner.
+
+```php
+$container = ContainerSingleton::getInstance();
+
+// now access all methods
+$container->get($abstract);
 ```
 
 ## Array accessing

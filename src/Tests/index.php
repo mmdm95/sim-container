@@ -11,6 +11,9 @@ include_once '../../vendor/autoload.php';
 // Normal instantiating
 $container = new Container();
 
+// Singleton in normal instance
+//$container = Container::getInstance();
+
 // Singleton instantiating
 //$container = ContainerSingleton::getInstance();
 
@@ -36,7 +39,7 @@ $container[TmpClass1::class] = function(Container $c) {
 };
 
 //$container[TmpClass1::class] = function(ContainerSingleton $c) {
-//    return new TmpClass1($c::getInstance()->get(TmpClass2::class), random_int(1, 10000));
+//    return new TmpClass1($c->get(TmpClass2::class), random_int(1, 10000));
 //};
 
 /**

@@ -3,7 +3,7 @@
  * @license http://www.opensource.org/licenses/mit-license.php MIT (see the LICENSE file)
  */
 
-namespace Sim\Container;
+namespace Sim\Container\Interfaces;
 
 /**
  * Describes the interface of a container that exposes methods to read its entries.
@@ -18,9 +18,10 @@ interface ContainerInterface
      * @throws NotFoundExceptionInterface  No entry was found for **this** identifier.
      * @throws ContainerExceptionInterface Error while retrieving the entry.
      *
+     * @param string|null $method
      * @return mixed Entry.
      */
-    public function get($id);
+    public function get($id, ?string $method = null);
 
     /**
      * Returns true if the container can return an entry for the given identifier.
@@ -31,7 +32,8 @@ interface ContainerInterface
      *
      * @param string $id Identifier of the entry to look for.
      *
+     * @param string|null $method
      * @return bool
      */
-    public function has($id);
+    public function has($id, ?string $method = null);
 }

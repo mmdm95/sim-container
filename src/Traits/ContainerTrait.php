@@ -6,39 +6,92 @@ use Closure;
 use ReflectionClass;
 use ReflectionException;
 use ReflectionParameter;
-use Sim\Container\ContainerSingleton;
+use Sim\Container\Exceptions\MethodNotFoundException;
 use Sim\Container\Exceptions\ParameterHasNoDefaultValueException;
 use Sim\Container\Exceptions\ServiceNotFoundException;
 use Sim\Container\Exceptions\ServiceNotInstantiableException;
 
 trait ContainerTrait
 {
+    protected $version = '1.1.1';
+
     /**
      * @var array $instances
      */
     private $instances = [];
 
     /**
-     * @var array $resolvedServices
+     * @var array $resolved_services
      */
-    private $resolvedServices = [];
+    private $resolved_services = [];
+
+    /**
+     * @var array $method_instances
+     */
+    private $method_instances = [];
+
+    /**
+     * @var array $method_resolved_services
+     */
+    private $method_resolved_services = [];
+
+    /**
+     * @var array $method_parameters
+     */
+    private $method_parameters = [];
+
+    /**
+     * @return string
+     */
+    public function getVersion(): string
+    {
+        return $this->version;
+    }
 
     /**
      * Set a service
      *
      * @param $abstract
      * @param null $concrete
+     * @param string|null $method_name
+     * @param array $method_parameters
+     *
+     * Specify kind of parameters it should have
+     *
+     * Exp1.
+     *   [
+     *     0 => CustomClass::class  or  Specified name in container,
+     *     1 => AnotherCustomClass::class  or  Specified name in container,
+     *   ]
+     *
+     * Exp2.
+     * Also can specify parameter by set name of parameter to something you want
+     *   [
+     *     'parameter_name' => CustomClass::class  or  Specified name in container,
+     *     'another_parameter_name' => AnotherCustomClass::class  or  Specified name in container,
+     *   ]
+     *
      * @return static
      */
-    public function set($abstract, $concrete = null)
+    public function set($abstract, $concrete = null, ?string $method_name = null, array $method_parameters = [])
     {
-        if (isset($this->resolvedServices[$abstract])) {
-            unset($this->resolvedServices[$abstract]);
-        }
         if (is_null($concrete)) {
             $concrete = $abstract;
         }
-        $this->instances[$abstract] = $concrete;
+
+        if (!is_null($method_name)) {
+            if (isset($this->method_resolved_services[$abstract][$method_name])) {
+                unset($this->method_resolved_services[$abstract][$method_name]);
+            }
+            $this->method_parameters[$abstract][$method_name] = $method_parameters;
+            $this->method_instances[$abstract][$method_name] = $concrete;
+        } else {
+            if (isset($this->resolved_services[$abstract])) {
+                unset($this->resolved_services[$abstract]);
+            }
+            $this->instances[$abstract] = $concrete;
+        }
+
         return $this;
     }
 
@@ -47,77 +100,138 @@ trait ContainerTrait
      * Note: if service not registered, it'll be register then return
      *
      * @param $abstract
+     * @param string|null $method_name
+     * @param array $method_parameters
      * @return mixed|object|null
+     * @throws MethodNotFoundException
      * @throws ParameterHasNoDefaultValueException
      * @throws ReflectionException
      * @throws ServiceNotFoundException
      * @throws ServiceNotInstantiableException
      */
-    public function get($abstract)
+    public function get($abstract, ?string $method_name = null, array $method_parameters = [])
     {
-        if (isset($this->resolvedServices[$abstract])) {
-            return $this->resolvedServices[$abstract];
+        if (!is_null($method_name)) {
+            if (isset($this->method_resolved_services[$abstract][$method_name])) {
+                return $this->method_resolved_services[$abstract][$method_name];
+            }
+
+            if (!isset($this->instances[$abstract][$method_name])) {
+                $this->set($abstract, null, $method_name, $this->method_parameters[$abstract][$method_name] ?? []);
+            }
+
+            $this->method_resolved_services[$abstract][$method_name] = $this->make($abstract, $method_name, $method_parameters);
+            $resolved = $this->method_resolved_services[$abstract][$method_name];
+        } else {
+            if (isset($this->resolved_services[$abstract])) {
+                return $this->resolved_services[$abstract];
+            }
+
+            if (!isset($this->instances[$abstract])) {
+                $this->set($abstract);
+            }
+
+            $this->resolved_services[$abstract] = $this->make($abstract);
+            $resolved = $this->resolved_services[$abstract];
         }
 
-        if (!isset($this->instances[$abstract])) {
-            $this->set($abstract);
-        }
-
-        $this->resolvedServices[$abstract] = $this->make($abstract);
-
-        return $this->resolvedServices[$abstract];
+        return $resolved;
     }
 
     /**
      * Get new instance each time
      *
      * @param $abstract
+     * @param string|null $method_name
+     * @param array $method_parameters
      * @return mixed|object
+     * @throws MethodNotFoundException
      * @throws ParameterHasNoDefaultValueException
      * @throws ReflectionException
      * @throws ServiceNotFoundException
      * @throws ServiceNotInstantiableException
      */
-    public function make($abstract)
+    public function make($abstract, ?string $method_name = null, array $method_parameters = [])
     {
-        if (!isset($this->instances[$abstract])) {
-            $this->instances[$abstract] = $abstract;
+        $parameters = [];
+        if (!is_null($method_name)) {
+            if (!isset($this->method_instances[$abstract][$method_name])) {
+                $this->method_instances[$abstract][$method_name] = $abstract;
+            }
+
+            $parameters = !empty($method_parameters)
+                ? $method_parameters
+                : ($this->method_parameters[$abstract][$method_name] ?? []);
+
+            $entry = $this->method_instances[$abstract][$method_name];
+        } else {
+            if (!isset($this->instances[$abstract])) {
+                $this->instances[$abstract] = $abstract;
+            }
+
+            $entry = $this->instances[$abstract];
         }
 
-        $entry = $this->instances[$abstract];
         if ($entry instanceof Closure) {
             return $entry($this);
         }
 
-        return $this->resolve($entry);
+        return $this->resolve($entry, $method_name, $parameters);
     }
 
     /**
      * Check if a service exists
      *
      * @param $abstract
+     * @param string|null $method_name
      * @return bool
      */
-    public function has($abstract): bool
+    public function has($abstract, string $method_name = null): bool
     {
-        if (isset($this->resolvedServices[$abstract])) {
-            return true;
+        if (!is_null($method_name)) {
+            if (isset($this->method_resolved_services[$abstract][$method_name])) {
+                return true;
+            }
+            return isset($this->method_instances[$abstract][$method_name]);
+        } else {
+            if (isset($this->resolved_services[$abstract])) {
+                return true;
+            }
+            return isset($this->instances[$abstract]);
         }
-        return isset($this->instances[$abstract]);
     }
 
     /**
      * Unset a registered service
      *
      * @param $abstract
+     * @param string|null $method_name
      * @return static
      */
-    public function unset($abstract)
+    public function unset($abstract, string $method_name = null)
     {
-        unset($this->resolvedServices[$abstract]);
-        unset($this->instances[$abstract]);
+        if (!is_null($method_name)) {
+            unset($this->method_resolved_services[$abstract][$method_name]);
+            unset($this->method_instances[$abstract][$method_name]);
+        } else {
+            unset($this->resolved_services[$abstract]);
+            unset($this->instances[$abstract]);
+        }
+
         return $this;
     }
+
+    /**
+     * It can help to create specific method of a class
+     * Accepts $options as below:
+     *   [
+     *     'method' => method name (like show),
+     *     'parameters => [
+     *       method_parameter1 => CustomClass::class  or  Specified name in container,
+     *       method_parameter2 => AnotherCustomClass::class  or  Specified name in container
+     *     ]
+     *   ]
+     */
 
     /**
      * Whether a offset exists
@@ -143,6 +257,7 @@ trait ContainerTrait
      * The offset to retrieve.
      * </p>
      * @return mixed Can return all value types.
+     * @throws MethodNotFoundException
      * @throws ParameterHasNoDefaultValueException
      * @throws ReflectionException
      * @throws ServiceNotFoundException
@@ -193,13 +308,16 @@ trait ContainerTrait
      * Main resolve method to create & resolve dependencies recursively
      *
      * @param string $entry
+     * @param string|null $method_name
+     * @param array $method_parameters
      * @return object
+     * @throws MethodNotFoundException
      * @throws ParameterHasNoDefaultValueException
      * @throws ReflectionException
      * @throws ServiceNotFoundException
      * @throws ServiceNotInstantiableException
      */
-    protected function resolve(string $entry)
+    protected function resolve(string $entry, ?string $method_name = null, array $method_parameters = [])
     {
         $reflector = $this->getReflector($entry);
         $constructor = null;
@@ -214,24 +332,73 @@ trait ContainerTrait
             throw new ServiceNotInstantiableException($entry);
         }
         if (is_null($constructor) || empty($parameters)) {
-            return $reflector->newInstance(); // return new instance from class
+            $instance = $reflector->newInstance(); // return new instance from class
+            return $this->resolveMethod($reflector, $instance, $method_name, $method_parameters);
         }
 
         foreach ($parameters as $parameter) {
             $resolved[] = $this->resolveDependency($parameter);
         }
-        return $reflector->newInstanceArgs($resolved); // return new instance with dependencies resolved
+        $instance = $reflector->newInstanceArgs($resolved); // return new instance with dependencies resolved
+        return $this->resolveMethod($reflector, $instance, $method_name, $method_parameters);
+    }
+
+    /**
+     * @param ReflectionClass $reflector
+     * @param $instance
+     * @param string|null $method_name
+     * @param array $method_parameters
+     * @return mixed
+     * @throws MethodNotFoundException
+     * @throws ParameterHasNoDefaultValueException
+     * @throws ReflectionException
+     */
+    protected function resolveMethod(ReflectionClass $reflector, $instance, ?string $method_name = null, array $method_parameters = [])
+    {
+        // method injection if method specified
+        if (!is_null($method_name)) {
+            // check if method is exists in instance
+            if (!$reflector->hasMethod($method_name)) {
+                throw new MethodNotFoundException(['name' => $method_name, 'class' => $reflector->getName()]);
+            }
+
+            $methodReflection = $reflector->getMethod($method_name);
+
+            $passingInstance = !$methodReflection->isStatic() ? $instance : null;
+
+            if ($methodReflection->isPublic()) {
+                $methodParametersResolved = [];
+                $methodParameters = $methodReflection->getParameters();
+
+                /**
+                 * @var ReflectionParameter $parameter
+                 */
+                foreach ($methodParameters as $k => $parameter) {
+                    $defOrClass = null;
+                    if (isset($method_parameters[$parameter->getName()]) || isset($method_parameters[$k])) {
+                        $defOrClass = $method_parameters[$parameter->getName()] ?? $method_parameters[$k];
+                    }
+
+                    $methodParametersResolved[] = $this->resolveDependency($parameter, $defOrClass);
+                }
+                return $methodReflection->invokeArgs($passingInstance, $methodParametersResolved);
+            }
+        }
+
+        // otherwise just do constructor injection
+        return $instance;
     }
 
     /**
      * Resolve dependency for a specific parameter
      *
      * @param ReflectionParameter $parameter
+     * @param null $defOrClass
      * @return mixed|object
      * @throws ParameterHasNoDefaultValueException
      * @throws ReflectionException
      */
-    protected function resolveDependency(ReflectionParameter $parameter)
+    protected function resolveDependency(ReflectionParameter $parameter, $defOrClass = null)
     {
         if (!is_null($parameter->getClass())) { // The parameter is a class
             $typeName = $parameter->getType()->getName();
@@ -239,20 +406,45 @@ trait ContainerTrait
                 $this->set($typeName); // Register it
             }
 
-            try {
-                return $this->get($typeName); // Instantiate it
-            } catch (\Exception $e) {
+            if (!is_null($defOrClass) && $parameter->getClass()->isInterface()) {
+                try {
+                    $reflect = new ReflectionClass($defOrClass);
+                    if (!$reflect->isUserDefined()) {
+                        $this->set($defOrClass); // Register it
+                    }
+
+                    return $this->get($defOrClass); // Instantiate it
+                } catch (\Exception $e) {
+                    if (!is_null($defOrClass)) {
+                        return $defOrClass;
+                    } else {
+                        if ($parameter->isDefaultValueAvailable()) { // Check if default value for a parameter is available
+                            return $parameter->getDefaultValue(); // Get default value of parameter
+                        } else {
+                            throw new ParameterHasNoDefaultValueException($parameter->name);
+                        }
+                    }
+                }
+            } else {
+                try {
+                    return $this->get($typeName); // Instantiate it
+                } catch (\Exception $e) {
+                    if ($parameter->isDefaultValueAvailable()) { // Check if default value for a parameter is available
+                        return $parameter->getDefaultValue(); // Get default value of parameter
+                    } else {
+                        throw new ParameterHasNoDefaultValueException($parameter->name);
+                    }
+                }
+            }
+        } else { // The parameter is a built-in primitive type
+            if (!is_null($defOrClass)) {
+                return $defOrClass;
+            } else {
                 if ($parameter->isDefaultValueAvailable()) { // Check if default value for a parameter is available
                     return $parameter->getDefaultValue(); // Get default value of parameter
                 } else {
                     throw new ParameterHasNoDefaultValueException($parameter->name);
                 }
-            }
-        } else { // The parameter is a built-in primitive type
-            if ($parameter->isDefaultValueAvailable()) { // Check if default value for a parameter is available
-                return $parameter->getDefaultValue(); // Get default value of parameter
-            } else {
-                throw new ParameterHasNoDefaultValueException($parameter->name);
             }
         }
     }

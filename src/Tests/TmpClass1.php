@@ -14,8 +14,11 @@ class TmpClass1
         $this->rnd_num = $random_number;
     }
 
-    public function showName()
+    public function showName(?string $name = null)
     {
+        if(!is_null($name)) {
+            echo $name;
+        }
         echo $this->cls->getFullName() . ' (' . $this->rnd_num . ')' . PHP_EOL;
     }
 }

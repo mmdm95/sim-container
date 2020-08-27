@@ -1,7 +1,6 @@
 <?php
 
 use Sim\Container\Container;
-use Sim\Container\ContainerSingleton;
 use Sim\Container\Tests\TmpClass1;
 use Sim\Container\Tests\TmpClass2;
 use Sim\Container\Tests\TmpClass3;

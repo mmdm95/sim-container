@@ -6,7 +6,7 @@ class TmpClass3
 {
     protected $name;
 
-    public function __construct(string $name = 'Cooper')
+    public function __construct(string $name = 'Sheldon')
     {
         $this->name = $name;
     }

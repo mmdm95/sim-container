@@ -3,6 +3,7 @@
 namespace Sim\Container;
 
 use ArrayAccess;
+use Sim\Container\Interfaces\ContainerInterface;
 use Sim\Container\Traits\ContainerTrait;
 
 class Container implements ContainerInterface, ArrayAccess

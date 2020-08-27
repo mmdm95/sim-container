@@ -2,9 +2,8 @@
 
 namespace Sim\Container\Exceptions;
 
-
 use Exception;
-use Sim\Container\NotFoundExceptionInterface;
+use Sim\Container\Interfaces\NotFoundExceptionInterface;
 
 class ParameterNotFoundException extends Exception implements NotFoundExceptionInterface
 {

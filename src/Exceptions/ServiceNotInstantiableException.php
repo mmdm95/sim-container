@@ -2,9 +2,8 @@
 
 namespace Sim\Container\Exceptions;
 
-
 use Exception;
-use Sim\Container\ContainerExceptionInterface;
+use Sim\Container\Interfaces\ContainerExceptionInterface;
 
 class ServiceNotInstantiableException extends Exception implements ContainerExceptionInterface
 {

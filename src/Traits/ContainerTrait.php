@@ -674,20 +674,19 @@ trait ContainerTrait
                 try {
                     return $this->get($defOrClass); // Instantiate it
                 } catch (\Exception $e) {
-                    if (!is_null($defOrClass)) {
-                        return $defOrClass;
+                    if ($parameter->isDefaultValueAvailable()) { // Check if default value for a parameter is available
+                        return $parameter->getDefaultValue(); // Get default value of parameter
                     } else {
-                        if ($parameter->isDefaultValueAvailable()) { // Check if default value for a parameter is available
-                            return $parameter->getDefaultValue(); // Get default value of parameter
-                        } else {
-                            throw new ParameterHasNoDefaultValueException($parameter->name);
-                        }
+                        throw new ParameterHasNoDefaultValueException($parameter->name);
                     }
                 }
             } else {
                 try {
                     return $this->get($typeName); // Instantiate it
                 } catch (\Exception $e) {
+                    if (!is_null($defOrClass)) {
+                        return $defOrClass;
+                    }
                     if ($parameter->isDefaultValueAvailable()) { // Check if default value for a parameter is available
                         return $parameter->getDefaultValue(); // Get default value of parameter
                     } else {
@@ -697,17 +696,12 @@ trait ContainerTrait
             }
         } else { // The parameter is a built-in primitive type
             if (!is_null($defOrClass)) {
-                try {
-                    return $this->get($defOrClass); // Instantiate it
-                } catch (\Exception $e) {
-                    return $defOrClass;
-                }
+                return $defOrClass;
+            }
+            if ($parameter->isDefaultValueAvailable()) { // Check if default value for a parameter is available
+                return $parameter->getDefaultValue(); // Get default value of parameter
             } else {
-                if ($parameter->isDefaultValueAvailable()) { // Check if default value for a parameter is available
-                    return $parameter->getDefaultValue(); // Get default value of parameter
-                } else {
-                    throw new ParameterHasNoDefaultValueException($parameter->name);
-                }
+                throw new ParameterHasNoDefaultValueException($parameter->name);
             }
         }
     }

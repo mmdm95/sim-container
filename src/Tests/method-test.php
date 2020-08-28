@@ -18,9 +18,33 @@ $container = new Container();
 // use functions of TmpClass1
 //$tmpClass1->showName(); // expected value is "Sheldon Cooper"
 
-$name = $container->get(TmpClass1::class, 'showName', [
-    'name' => 'William ',
-]);
+//$name = $container->get(TmpClass1::class, 'showName', [
+//    'name' => 'William ',
+//]);
+
+// Array structured
+$info = [
+    'abstract' => TmpClass1::class,
+    'method' => [
+        'name' => 'showName',
+        'parameters' => [
+            'name' => 'William '
+        ],
+    ],
+];
+
+// Object structured
+//$info = new \stdClass();
+//$info->abstract = TmpClass1::class;
+//$info->method = [
+//    'name' => 'showName',
+//    'parameters' => [
+//        'name' => 'William '
+//    ],
+//];
+
+//$container[$info];
+$container[json_encode($info)];
 
 $container->set(\Sim\Container\Tests\TmpITest::class, null, 'setName', [
     'test_interface' => \Sim\Container\Tests\TmpITest2::class,

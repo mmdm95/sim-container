@@ -223,6 +223,8 @@ OR
 
   An optional $abstract variable and $concrete/$abstract value
 
+----------
+
 - $concrete = $container[$abstract] instead of 
 $concrete = $container->get($abstract, ?string $method_name = null, array $method_parameters = []).
 
@@ -258,6 +260,8 @@ OR
 OR
 
   An $abstract variable
+  
+----------
 
 - isset($container[$abstract]) instead of 
 $container->has($abstract, string $method_name = null).
@@ -286,6 +290,8 @@ OR
 OR
 
   An $abstract variable
+  
+----------
 
 - unset($container[$abstract]) instead of 
 $container->unset($abstract, string $method_name = null).

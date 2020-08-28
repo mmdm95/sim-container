@@ -46,12 +46,13 @@ $info = [
 //$container[$info];
 $container[json_encode($info)];
 
-$container->set('a_simple_test', function () {
-    return new \Sim\Container\Tests\TmpITest2();
-});
+//$container->set('a_simple_test', function () {
+//    return new \Sim\Container\Tests\TmpITest2();
+//});
 
 $container->set(\Sim\Container\Tests\TmpITest::class, null, 'setName', [
-    'test_interface' => 'a_simple_test',
+//    'test_interface' => 'a_simple_test',
+    'test_interface' => \Sim\Container\Tests\TmpITest2::class,
 //    'name' => '',
 //    1 => 'mmdm',
 ]);

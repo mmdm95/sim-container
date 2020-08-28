@@ -275,18 +275,18 @@ trait ContainerTrait
         }
 
         if (is_array($offset)) {
-            if(isset($offset['abstract'])) {
+            if (isset($offset['abstract'])) {
                 $abstract = $offset['abstract'];
-                if(isset($offset['method']['name'])) {
+                if (isset($offset['method']['name'])) {
                     $methodName = $offset['method']['name'];
                 }
             } else {
                 $abstract = $actualOffset;
             }
         } elseif (is_object($offset) && isset($offset->abstract) && isset($offset->method['name'])) {
-            if(isset($offset->abstract)) {
+            if (isset($offset->abstract)) {
                 $abstract = $offset->abstract;
-                if(isset($offset->method['name'])) {
+                if (isset($offset->method['name'])) {
                     $methodName = $offset->method['name'];
                 }
             } else {
@@ -546,18 +546,18 @@ trait ContainerTrait
         }
 
         if (is_array($offset)) {
-            if(isset($offset['abstract'])) {
+            if (isset($offset['abstract'])) {
                 $abstract = $offset['abstract'];
-                if(isset($offset['method']['name'])) {
+                if (isset($offset['method']['name'])) {
                     $methodName = $offset['method']['name'];
                 }
             } else {
                 $abstract = $actualOffset;
             }
         } elseif (is_object($offset) && isset($offset->abstract) && isset($offset->method['name'])) {
-            if(isset($offset->abstract)) {
+            if (isset($offset->abstract)) {
                 $abstract = $offset->abstract;
-                if(isset($offset->method['name'])) {
+                if (isset($offset->method['name'])) {
                     $methodName = $offset->method['name'];
                 }
             } else {
@@ -672,11 +672,6 @@ trait ContainerTrait
 
             if (!is_null($defOrClass) && $parameter->getClass()->isInterface()) {
                 try {
-                    $reflect = new ReflectionClass($defOrClass);
-                    if (!$reflect->isUserDefined()) {
-                        $this->set($defOrClass); // Register it
-                    }
-
                     return $this->get($defOrClass); // Instantiate it
                 } catch (\Exception $e) {
                     if (!is_null($defOrClass)) {
@@ -702,7 +697,11 @@ trait ContainerTrait
             }
         } else { // The parameter is a built-in primitive type
             if (!is_null($defOrClass)) {
-                return $defOrClass;
+                try {
+                    return $this->get($defOrClass); // Instantiate it
+                } catch (\Exception $e) {
+                    return $defOrClass;
+                }
             } else {
                 if ($parameter->isDefaultValueAvailable()) { // Check if default value for a parameter is available
                     return $parameter->getDefaultValue(); // Get default value of parameter

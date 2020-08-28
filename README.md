@@ -5,6 +5,7 @@ A library for dependency injection management.
 - Auto wiring
 - Singleton construction
 - Factory construction
+- Method injection
 - Both method and array access
 
 ## Install

@@ -246,6 +246,9 @@ trait ContainerTrait
      * OR:
      *   An encoded json that has above structure
      *
+     * OR:
+     *   An $abstract variable
+     *
      * @link https://php.net/manual/en/arrayaccess.offsetexists.php
      * @param mixed $offset <p>
      * An offset to check for.
@@ -323,6 +326,9 @@ trait ContainerTrait
      *
      * OR:
      *   An encoded json that has above structure
+     *
+     * OR:
+     *   An $abstract variable
      *
      * @link https://php.net/manual/en/arrayaccess.offsetget.php
      * @param mixed $offset <p>
@@ -414,6 +420,9 @@ trait ContainerTrait
      *
      * OR:
      *   An encoded json that has above structure
+     *
+     * OR:
+     *   An optional $abstract variable and $concrete/$abstract value
      *
      * @link https://php.net/manual/en/arrayaccess.offsetset.php
      * @param mixed $offset <p>
@@ -510,6 +519,9 @@ trait ContainerTrait
      *
      * OR:
      *   An encoded json that has above structure
+     *
+     * OR:
+     *   An $abstract variable
      *
      * @link https://php.net/manual/en/arrayaccess.offsetunset.php
      * @param mixed $offset <p>

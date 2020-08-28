@@ -48,6 +48,7 @@ $container[json_encode($info)];
 
 $container->set(\Sim\Container\Tests\TmpITest::class, null, 'setName', [
     'test_interface' => \Sim\Container\Tests\TmpITest2::class,
-    'name' => 'mmdm',
+//    'name' => '',
+    1 => 'mmdm',
 ]);
 $name = $container->get(\Sim\Container\Tests\TmpITest::class, 'setName');

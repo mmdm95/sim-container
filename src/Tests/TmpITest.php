@@ -13,8 +13,11 @@ class TmpITest implements ITest
         $this->rnd_num = $random_number;
     }
 
-    public function setName(ITest2 $test_interface, string $name)
+    public function setName(ITest2 $test_interface, ?string $name)
     {
+        if(!empty($name)) {
+            $test_interface->setName($name);
+        }
         echo $test_interface->getName();
         $this->name = $name;
     }

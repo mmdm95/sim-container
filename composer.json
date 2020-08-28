@@ -1,20 +1,21 @@
 {
-    "name": "mmdm/sim-container",
-    "description": "A simple yet nice dependency injection container",
-    "type": "library",
-    "license": "MIT",
-    "authors": [
-        {
-            "name": "MMDM",
-            "email": "mmdehghan95@gmail.com"
-        }
-    ],
-    "autoload": {
-        "psr-4": {
-            "Sim\\Container\\": "src/"
-        }
-    },
-    "require": {
-        "php": ">=7.2"
+  "name": "mmdm/sim-container",
+  "description": "A simple yet nice dependency injection container",
+  "type": "library",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "MMDM",
+      "email": "mmdehghan95@gmail.com"
     }
+  ],
+  "autoload": {
+    "psr-4": {
+      "Sim\\Container\\": "src/"
+    }
+  },
+  "require": {
+    "php": ">=7.2",
+    "ext-json": "*"
+  }
 }

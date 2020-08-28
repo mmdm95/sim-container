@@ -13,7 +13,10 @@ use Sim\Container\Exceptions\ServiceNotInstantiableException;
 
 trait ContainerTrait
 {
-    protected $version = '1.1.1';
+    /**
+     * @var string $version
+     */
+    protected $version = '1.2.0';
 
     /**
      * @var array $instances
@@ -222,19 +225,27 @@ trait ContainerTrait
     }
 
     /**
-     * It can help to create specific method of a class
-     * Accepts $options as below:
-     *   [
-     *     'method' => method name (like show),
-     *     'parameters => [
-     *       method_parameter1 => CustomClass::class  or  Specified name in container,
-     *       method_parameter2 => AnotherCustomClass::class  or  Specified name in container
-     *     ]
-     *   ]
-     */
-
-    /**
      * Whether a offset exists
+     *
+     * Accepts $offset as below:
+     *   [
+     *     'abstract' => $abstract,
+     *     'method' => [
+     *       'name' => method's name,
+     *     ],
+     *   ]
+     *
+     * OR:
+     *   object(stdClass) {
+     *     'abstract' => $abstract,
+     *     'method' => [
+     *       'name' => method's name,
+     *     ],
+     *   }
+     *
+     * OR:
+     *   An encoded json that has above structure
+     *
      * @link https://php.net/manual/en/arrayaccess.offsetexists.php
      * @param mixed $offset <p>
      * An offset to check for.
@@ -247,11 +258,72 @@ trait ContainerTrait
      */
     public function offsetExists($offset)
     {
-        return $this->has($offset);
+        $actualOffset = $offset;
+
+        $methodName = null;
+        $abstract = $offset;
+
+        // if json passed
+        if (is_string($offset)) {
+            $str = json_decode($offset, true);
+            if (!is_null($str)) {
+                $offset = $str;
+            }
+        }
+
+        if (is_array($offset)) {
+            if(isset($offset['abstract'])) {
+                $abstract = $offset['abstract'];
+                if(isset($offset['method']['name'])) {
+                    $methodName = $offset['method']['name'];
+                }
+            } else {
+                $abstract = $actualOffset;
+            }
+        } elseif (is_object($offset) && isset($offset->abstract) && isset($offset->method['name'])) {
+            if(isset($offset->abstract)) {
+                $abstract = $offset->abstract;
+                if(isset($offset->method['name'])) {
+                    $methodName = $offset->method['name'];
+                }
+            } else {
+                $abstract = $actualOffset;
+            }
+        }
+
+        return $this->has($abstract, $methodName);
     }
 
     /**
      * Offset to retrieve
+     *
+     * Accepts $offset as below:
+     *   [
+     *     'abstract' => $abstract,
+     *     'method' => [
+     *       'name' => method's name,
+     *       'parameters' => [
+     *         method_parameter1 => CustomClass::class  or  Specified name in container,
+     *         method_parameter2 => AnotherCustomClass::class  or  Specified name in container
+     *       ].
+     *     ],
+     *   ]
+     *
+     * OR:
+     *   object(stdClass) {
+     *     'abstract' => $abstract,
+     *     'method' => [
+     *       'name' => method's name,
+     *       'parameters' => [
+     *         method_parameter1 => CustomClass::class  or  Specified name in container,
+     *         method_parameter2 => AnotherCustomClass::class  or  Specified name in container
+     *       ].
+     *     ],
+     *   }
+     *
+     * OR:
+     *   An encoded json that has above structure
+     *
      * @link https://php.net/manual/en/arrayaccess.offsetget.php
      * @param mixed $offset <p>
      * The offset to retrieve.
@@ -266,11 +338,83 @@ trait ContainerTrait
      */
     public function offsetGet($offset)
     {
-        return $this->get($offset);
+        $actualOffset = $offset;
+
+        $methodName = null;
+        $methodParameters = [];
+        $abstract = $offset;
+
+        // if json passed
+        if (is_string($offset)) {
+            $str = json_decode($offset, true);
+            if (!is_null($str)) {
+                $offset = $str;
+            }
+        }
+
+        if (is_array($offset)) {
+            if (isset($offset['abstract'])) {
+                $abstract = $offset['abstract'];
+
+                if (isset($offset['method']['name'])) {
+                    $methodName = $offset['method']['name'];
+
+                    if (isset($offset['method']['parameters']) && is_array($offset['method']['parameters'])) {
+                        $methodParameters = $offset['method']['parameters'];
+                    }
+                }
+            } else {
+                $abstract = $actualOffset;
+            }
+        } elseif (is_object($offset)) {
+            if (isset($offset->abstract)) {
+                $abstract = $offset->abstract;
+
+                if (isset($offset->method['name'])) {
+                    $methodName = $offset->method['name'];
+
+                    if (isset($offset->method['parameters']) && is_array($offset->method['parameters'])) {
+                        $methodParameters = $offset->method['parameters'];
+                    }
+                }
+            } else {
+                $abstract = $actualOffset;
+            }
+        }
+
+        return $this->get($abstract, $methodName, $methodParameters);
     }
 
     /**
      * Offset to set
+     *
+     * Accepts $offset as below:
+     *   [
+     *     'concrete' => $concrete,
+     *     'method' => [
+     *       'name' => method's name,
+     *       'parameters' => [
+     *         method_parameter1 => CustomClass::class  or  Specified name in container,
+     *         method_parameter2 => AnotherCustomClass::class  or  Specified name in container
+     *       ].
+     *     ],
+     *   ]
+     *
+     * OR:
+     *   object(stdClass) {
+     *     'concrete' => $concrete,
+     *     'method' => [
+     *       'name' => method's name,
+     *       'parameters' => [
+     *         method_parameter1 => CustomClass::class  or  Specified name in container,
+     *         method_parameter2 => AnotherCustomClass::class  or  Specified name in container
+     *       ].
+     *     ],
+     *   }
+     *
+     * OR:
+     *   An encoded json that has above structure
+     *
      * @link https://php.net/manual/en/arrayaccess.offsetset.php
      * @param mixed $offset <p>
      * The offset to assign the value to.
@@ -283,15 +427,90 @@ trait ContainerTrait
      */
     public function offsetSet($offset, $value)
     {
+        $methodName = null;
+        $methodParameters = [];
+
         if (is_null($offset)) {
-            $this->set($value);
+            $actualOffset = $value;
+            $abstract = $value;
+            $concrete = null;
         } else {
-            $this->set($offset, $value);
+            $actualOffset = $offset;
+            $abstract = $offset;
+            $concrete = $value;
         }
+
+        // if json passed
+        if (is_string($offset)) {
+            $str = json_decode($offset, true);
+            if (!is_null($str)) {
+                $offset = $str;
+            }
+        }
+
+        if (is_array($value)) {
+            if (isset($value['concrete'])) {
+                if (is_null($offset)) {
+                    $abstract = $value['concrete'];
+                } else {
+                    $concrete = $value['concrete'];
+                }
+
+                if (isset($value['method']['name'])) {
+                    $methodName = $value['method']['name'];
+
+                    if (isset($value['method']['parameters']) && is_array($value['method']['parameters'])) {
+                        $methodParameters = $value['method']['parameters'];
+                    }
+                }
+            } else {
+                $abstract = $actualOffset;
+            }
+        } elseif (is_object($offset)) {
+            if (isset($value->concrete)) {
+                if (is_null($offset)) {
+                    $abstract = $value->concrete;
+                } else {
+                    $concrete = $value->concrete;
+                }
+
+                if (isset($value->method['name'])) {
+                    $methodName = $value->method['name'];
+
+                    if (isset($value->method['parameters']) && is_array($value->method['parameters'])) {
+                        $methodParameters = $value->method['parameters'];
+                    }
+                }
+            } else {
+                $abstract = $actualOffset;
+            }
+        }
+
+        $this->set($abstract, $concrete, $methodName, $methodParameters);
     }
 
     /**
      * Offset to unset
+     *
+     * Accepts $offset as below:
+     *   [
+     *     'abstract' => $abstract,
+     *     'method' => [
+     *       'name' => method's name,
+     *     ],
+     *   ]
+     *
+     * OR:
+     *   object(stdClass) {
+     *     'abstract' => $abstract,
+     *     'method' => [
+     *       'name' => method's name,
+     *     ],
+     *   }
+     *
+     * OR:
+     *   An encoded json that has above structure
+     *
      * @link https://php.net/manual/en/arrayaccess.offsetunset.php
      * @param mixed $offset <p>
      * The offset to unset.
@@ -301,7 +520,40 @@ trait ContainerTrait
      */
     public function offsetUnset($offset)
     {
-        $this->unset($offset);
+        $actualOffset = $offset;
+
+        $methodName = null;
+        $abstract = $offset;
+
+        // if json passed
+        if (is_string($offset)) {
+            $str = json_decode($offset, true);
+            if (!is_null($str)) {
+                $offset = $str;
+            }
+        }
+
+        if (is_array($offset)) {
+            if(isset($offset['abstract'])) {
+                $abstract = $offset['abstract'];
+                if(isset($offset['method']['name'])) {
+                    $methodName = $offset['method']['name'];
+                }
+            } else {
+                $abstract = $actualOffset;
+            }
+        } elseif (is_object($offset) && isset($offset->abstract) && isset($offset->method['name'])) {
+            if(isset($offset->abstract)) {
+                $abstract = $offset->abstract;
+                if(isset($offset->method['name'])) {
+                    $methodName = $offset->method['name'];
+                }
+            } else {
+                $abstract = $actualOffset;
+            }
+        }
+
+        $this->unset($abstract, $methodName);
     }
 
     /**

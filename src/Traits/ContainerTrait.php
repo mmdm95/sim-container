@@ -16,7 +16,7 @@ trait ContainerTrait
     /**
      * @var string $version
      */
-    protected $version = '1.2.0';
+    protected $version = '1.2.1';
 
     /**
      * @var array $instances

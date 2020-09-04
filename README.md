@@ -187,10 +187,12 @@ $instance->set($abstract, function (YourOtherClass $c) {
 ## Array accessing
 You can use array accessing instead of method accessing:
 
-- $container[$abstract] = $concrete instead of 
-$container->set($abstract, $concrete, ?string $method_name = null, array $method_parameters = []).
+- `$container[$abstract] = $concrete` instead of 
+`$container->set($abstract, $concrete, ?string $method_name = null, array $method_parameters = [])`.
 
 Accepts $offset as below:
+
+```
   [
     'concrete' => $concrete,
     'method' => [
@@ -201,9 +203,11 @@ Accepts $offset as below:
       ].
     ],
   ]
+```
 
 OR
 
+```
   object(stdClass) {
     'concrete' => $concrete,
     'method' => [
@@ -214,21 +218,28 @@ OR
       ].
     ],
   }
+```  
 
 OR
 
+```
   An encoded json that has above structure
+```
 
 OR
 
+```
   An optional $abstract variable and $concrete/$abstract value
+```
 
 ----------
 
-- $concrete = $container[$abstract] instead of 
-$concrete = $container->get($abstract, ?string $method_name = null, array $method_parameters = []).
+- `$concrete = $container[$abstract]` instead of 
+`$concrete = $container->get($abstract, ?string $method_name = null, array $method_parameters = [])`.
 
 Accepts $offset as below:
+
+```
   [
     'abstract' => $abstract,
     'method' => [
@@ -239,9 +250,11 @@ Accepts $offset as below:
       ].
     ],
   ]
-  
+```
+
 OR
 
+```
   object(stdClass) {
     'abstract' => $abstract,
     'method' => [
@@ -252,74 +265,97 @@ OR
       ].
     ],
   }
+```
   
 OR
 
+```  
   An encoded json that has above structure
+```
 
 OR
 
+```
   An $abstract variable
+```
   
 ----------
 
-- isset($container[$abstract]) instead of 
-$container->has($abstract, string $method_name = null).
+- `isset($container[$abstract])` instead of 
+`$container->has($abstract, string $method_name = null)`.
 
 Accepts $offset as below:
+
+```
   [
     'abstract' => $abstract,
     'method' => [
       'name' => method's name,
     ],
   ]
+```
   
 OR
 
+```
   object(stdClass) {
     'abstract' => $abstract,
     'method' => [
       'name' => method's name,
     ],
   }
+```
   
 OR
 
+```
   An encoded json that has above structure
+```
   
 OR
 
+```
   An $abstract variable
+```
   
 ----------
 
-- unset($container[$abstract]) instead of 
-$container->unset($abstract, string $method_name = null).
+- `unset($container[$abstract])` instead of 
+`$container->unset($abstract, string $method_name = null)`.
 
 Accepts $offset as below:
+
+```
   [
     'abstract' => $abstract,
     'method' => [
       'name' => method's name,
     ],
   ]
+```
   
 OR
 
+```
   object(stdClass) {
     'abstract' => $abstract,
     'method' => [
       'name' => method's name,
     ],
   }
+```
   
 OR
 
+```
   An encoded json that has above structure
+```
   
 OR
 
+```
   An $abstract variable
+```
 
 # License
 Under MIT license.

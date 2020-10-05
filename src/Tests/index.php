@@ -6,6 +6,7 @@ use Sim\Container\Tests\TmpClass2;
 use Sim\Container\Tests\TmpClass3;
 
 include_once '../../vendor/autoload.php';
+//include_once '../../autoloader.php';
 
 // Normal instantiating
 $container = new Container();

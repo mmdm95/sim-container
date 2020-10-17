@@ -67,6 +67,15 @@ $container->set('log_cls', Logger::class);
 // or simply store with Logger::class string
 // alias will be the string from Logger::class
 $container->set(Logger::class);
+// or if you have some works to do and return a 
+// new instance then use this
+$container->set('alias of class', function (Container $c) {
+    // do anything you need
+    // ...
+    
+    // return a new instance of a class
+    return new SomeClass();
+});
 
 // method injection
 $container->set('log_cls', Logger::class, 'info');
